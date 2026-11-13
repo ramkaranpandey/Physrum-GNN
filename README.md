@@ -1,4 +1,4 @@
-# PHYSRUM-GNN: Aster City routing simulation
+# PHYSRUM-GNN: interactive offline Guwahati routing simulation
 
 **Start the visual dashboard (Python 3.10+, no packages or internet):**
 
@@ -6,11 +6,9 @@
 python app.py
 ```
 
-The browser should open automatically at **http://127.0.0.1:8765**. If it does not, paste that address into your browser. Keep the terminal open while using the dashboard; Ctrl+C stops it. This is a **fictional, medium-size city**, with a river, three bridges, parks, landmarks, districts, 166 intersections, and 288 road segments. It is deliberately separate from the offline Guwahati CLI experiment below.
+The browser should open automatically at **http://127.0.0.1:8765**. If it does not, paste that address into your browser. Keep the terminal open while using the dashboard; Ctrl+C stops it. In the browser select Maligaon, Jorabat, or Panikhaiti; click a road or type its segment ID; press **Simulate disruption**; then choose Dijkstra, Physarum, or Physarum-GNN to inspect their detours and compare route validity, estimated drive time, and rerouting latency. **Block original route** chooses a road already on the orange route. The Before / After controls and scroll zoom help show the closure and recovery. Leave the road field empty to trigger the scenario's default simulated incident. Computation can take 5–20 seconds, depending on the computer.
 
-The dashboard opens with an example start and destination already selected. Press **Block central bridge** to create a recoverable disruption on the original route. Alternatively, press **Pick start** and **Pick destination** to click any two intersections; press **Pick roads** to close multiple roads by clicking their segments. Clicking a blocked road reopens it. You can also enter comma-separated road IDs, clear closures, or reset the trip. Press **Run simulation**: Physarum runs first and displays its recovered path on the main map, followed by Dijkstra. Two report cards then appear side by side with separate route maps, estimated drive time, and measured rerouting latency. A visual pause makes the sequence easy to follow; it is **not** included in measured latency. If closures disconnect the destination, the cards say unreachable.
-
-The browser and routing API both run locally. They use `data/custom_city.json` and Python's standard library and do not fetch online maps. `python scripts/build_city.py` deterministically regenerates the fictional city. The dashboard compares Physarum and Dijkstra, as requested. The earlier Guwahati CLI benchmark still includes the GNN and generates CSVs and maps; it is independent of this fictional-city dashboard.
+The browser interface and routing API both run on your own machine. They use the included road bundle and standard library and do not fetch online map tiles. All hazards are simulated. `python main.py` remains available as a command-line benchmark that generates maps and CSVs; you do not need to run it to open the dashboard.
 
 ## Optional CLI benchmark
 

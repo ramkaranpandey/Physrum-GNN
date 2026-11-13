@@ -222,7 +222,7 @@
     "Dijkstra rerun": {
       "valid_after_closure": true,
       "estimated_drive_min": 5.31,
-      "reroute_ms": 1.079,
+      "reroute_ms": 0.986,
       "path": {
         "edge_ids": [
           14251,
@@ -562,7 +562,7 @@
     "Physarum": {
       "valid_after_closure": true,
       "estimated_drive_min": 5.31,
-      "reroute_ms": 5588.225,
+      "reroute_ms": 5718.473,
       "path": {
         "edge_ids": [
           14251,
@@ -902,7 +902,7 @@
     "Physarum-GNN": {
       "valid_after_closure": true,
       "estimated_drive_min": 5.31,
-      "reroute_ms": 5897.674,
+      "reroute_ms": 5761.672,
       "path": {
         "edge_ids": [
           14251,
