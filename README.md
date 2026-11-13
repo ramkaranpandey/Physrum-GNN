@@ -1,14 +1,18 @@
-# PHYSRUM-GNN: interactive offline Guwahati routing simulation
+# PHYSRUM-GNN: live Guwahati disruption simulator
 
-**Start the visual dashboard (Python 3.10+, no packages or internet):**
+**Run the offline browser dashboard (Python 3.10+):**
 
 ```bash
 python app.py
 ```
 
-The browser should open automatically at **http://127.0.0.1:8765**. If it does not, paste that address into your browser. Keep the terminal open while using the dashboard; Ctrl+C stops it. In the browser select Maligaon, Jorabat, or Panikhaiti; click a road or type its segment ID; press **Simulate disruption**; then choose Dijkstra, Physarum, or Physarum-GNN to inspect their detours and compare route validity, estimated drive time, and rerouting latency. **Block original route** chooses a road already on the orange route. The Before / After controls and scroll zoom help show the closure and recovery. Leave the road field empty to trigger the scenario's default simulated incident. Computation can take 5–20 seconds, depending on the computer.
+The app prints a fresh local `http://127.0.0.1:<port>` address and opens it in your browser. Keep the terminal open; press Ctrl+C to stop. Each launch picks a free port so an earlier demo cannot serve a stale page. Internet and extra packages are not needed.
 
-The browser interface and routing API both run on your own machine. They use the included road bundle and standard library and do not fetch online map tiles. All hazards are simulated. `python main.py` remains available as a command-line benchmark that generates maps and CSVs; you do not need to run it to open the dashboard.
+The main map is a close-up of the bundled OSM-derived Maligaon-Kamakhya road network: a connected extract with 374 road vertices and 379 directed-aware road segments. Pick a **starting intersection** and **destination** by clicking the map, or use the preselected example. Press **Start live simulation**. The browser shows vehicle positions, current route plans, simulated road closures, and a tick-by-tick comparison. You only select endpoints; the disaster engine chooses seeded random epicenters near future routes every three ticks, using a bypass-preserving closure when possible. Affected roads are removed for both methods. Results are reproducible with the default seed.
+
+A master tick loop advances each vehicle one road per tick. A separate producer thread proposes simulated hazards and uses a lock and condition to synchronize them with the main loop. Dijkstra recomputes from its current position when a closure touches its remaining route and records each recalculation penalty. Physarum-GNN uses bundled trained one-hop edge scores to initialize conductivity once, then retains conductivity and pressure across ticks; each tick solves one warm-started pressure/flux update and extracts a legal route. **That extraction still uses a weighted shortest-path search internally**, so these results do not prove Physarum is algorithmically superior to Dijkstra. The UI reports measured cumulative compute milliseconds, recalculation or route-update counts, estimated road travel minutes, elapsed wall seconds, and ticks to arrival. The 80 ms visual tick interval is a presentation clock, not real-world travel time. Simulated incidents, assumed road-class speeds, and tile-derived connectivity are not suitable for emergency navigation.
+
+The previous static three-scenario Guwahati benchmark and GNN held-out evaluation remain available as an optional CLI experiment.
 
 ## Optional CLI benchmark
 
