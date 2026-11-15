@@ -65,7 +65,7 @@ def bpr_multiplier(flow, capacity):
 
 class Fleet:
     def __init__(self, count=50, start=DEFAULT_START, target=DEFAULT_END,
-                 seed=2306, tick_seconds=.001, max_ticks=None, pairs=None):
+                 seed=2306, tick_seconds=.02, max_ticks=None, pairs=None):
         if not 1 <= count <= 2500: raise ValueError('Fleet size must be between 1 and 2500.')
         if pairs is None:
             # Legacy mode: one selected start/end; a second depot and zone are
