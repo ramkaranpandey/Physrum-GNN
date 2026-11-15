@@ -1,5 +1,6 @@
 """Tick-driven, seeded disaster simulation on an OSM-derived Guwahati component."""
 import copy
+import math
 import queue
 import random
 import threading
@@ -7,12 +8,77 @@ import time
 from collections import deque
 
 from .experiment import route_setup
+from .graph import RoadGraph
 from .model import load, predict
 from .physarum import adapt
 
 
 def local_graph():
     graph, source, target, _ = route_setup('maligaon')
+    original = connected_component(graph, source)
+    xs = [p[0] for p in original.nodes.values()]
+    ys = [p[1] for p in original.nodes.values()]
+    cx, cy = (min(xs)+max(xs))/2, (min(ys)+max(ys))/2
+    bounds = (cx-.825*(max(xs)-min(xs)), cy-.825*(max(ys)-min(ys)),
+              cx+.825*(max(xs)-min(xs)), cy+.825*(max(ys)-min(ys)))
+    wider = connected_component(RoadGraph(bounds=bounds), source)
+    add_simulated_connectors(wider)
+    return wider, source, target, bounds
+
+
+def add_simulated_connectors(graph, limit=140):
+    """Create short, clearly marked alternate simulation links at sparse junctions."""
+    neighbors = {node: set() for node in graph.nodes}
+    for edge in graph.edges:
+        neighbors[edge['u']].add(edge['v'])
+        neighbors[edge['v']].add(edge['u'])
+    nodes = list(graph.nodes)
+    candidates = []
+    for i, u in enumerate(nodes):
+        if len(neighbors[u]) >= 3:
+            continue
+        x, y = graph.nodes[u]
+        for v in nodes[i+1:]:
+            if len(neighbors[v]) >= 3 or v in neighbors[u]:
+                continue
+            vx, vy = graph.nodes[v]
+            distance = 111000 * math.hypot((x-vx)*.9, y-vy)
+            if 15 <= distance <= 70:
+                candidates.append((distance, u, v))
+
+    def crosses(u, v):
+        a, b = graph.nodes[u], graph.nodes[v]
+        def orient(p, q, r):
+            return (q[0]-p[0])*(r[1]-p[1])-(q[1]-p[1])*(r[0]-p[0])
+        for edge in graph.edges:
+            if u in (edge['u'], edge['v']) or v in (edge['u'], edge['v']):
+                continue
+            c, d = graph.nodes[edge['u']], graph.nodes[edge['v']]
+            if orient(a,b,c)*orient(a,b,d)<0 and orient(c,d,a)*orient(c,d,b)<0:
+                return True
+        return False
+
+    next_id = max(graph.by_id) + 1
+    added = 0
+    for distance, u, v in sorted(candidates):
+        if added >= limit:
+            break
+        if len(neighbors[u]) >= 3 or len(neighbors[v]) >= 3 or v in neighbors[u] or crosses(u,v):
+            continue
+        edge = {'id':next_id,'u':u,'v':v,'oneway':False,'highway':'residential',
+                'bridge':False,'meters':round(distance*1.15,2),'speed_kmh':18,
+                'geometry':[graph.nodes[u],graph.nodes[v]],'simulated':True}
+        graph.edges.append(edge)
+        graph.by_id[next_id] = edge
+        graph.adj[u].append((v,next_id))
+        graph.adj[v].append((u,next_id))
+        neighbors[u].add(v)
+        neighbors[v].add(u)
+        next_id += 1
+        added += 1
+
+
+def connected_component(graph, source):
     neighbors = {n: [] for n in graph.nodes}
     for e in graph.edges:
         neighbors[e['u']].append(e['v']); neighbors[e['v']].append(e['u'])
@@ -27,10 +93,10 @@ def local_graph():
     for e in graph.edges:
         graph.adj[e['u']].append((e['v'], e['id']))
         if not e['oneway']: graph.adj[e['v']].append((e['u'], e['id']))
-    return graph, source, target
+    return graph
 
 
-GRAPH, DEFAULT_START, DEFAULT_END = local_graph()
+GRAPH, DEFAULT_START, DEFAULT_END, DISPLAY_BOUNDS = local_graph()
 
 
 class Session:

@@ -6,11 +6,16 @@ import webbrowser
 import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from physrum.dynamic import GRAPH, DEFAULT_START, DEFAULT_END, Session
+from physrum.dynamic import GRAPH, DEFAULT_START, DEFAULT_END, DISPLAY_BOUNDS
+from physrum.fleet import Fleet, DEPOTS, ZONES, MAX_PAIRS, default_pairs
+from physrum.graph import RoadGraph
 
 ROOT=Path(__file__).resolve().parent
-HTML=(ROOT/'dynamic.html').read_bytes()
+HTML=(ROOT/'fleet.html').read_bytes()
 SESSIONS={}
+BACKGROUND=RoadGraph(bounds=DISPLAY_BOUNDS)
+BACKGROUND.edges.extend(edge for edge in GRAPH.edges if edge.get('simulated'))
+DEFAULT_PAIRS=default_pairs()
 
 class Handler(BaseHTTPRequestHandler):
     def respond(self,value,status=200):
@@ -24,8 +29,11 @@ class Handler(BaseHTTPRequestHandler):
             self.send_header('Cache-Control','no-store')
             self.send_header('Content-Length',str(len(HTML)));self.end_headers();self.wfile.write(HTML)
         elif self.path=='/api/map':
-            self.respond({'nodes':GRAPH.nodes,'edges':GRAPH.edges,
+            self.respond({'nodes':GRAPH.nodes,'edges':BACKGROUND.edges,
+                'background_nodes':BACKGROUND.nodes,
                 'default_start':DEFAULT_START,'default_end':DEFAULT_END,
+                'depots':DEPOTS,'zones':ZONES,
+                'default_pairs':DEFAULT_PAIRS,'max_pairs':MAX_PAIRS,
                 'title':'Maligaon-Kamakhya · OSM-derived road close-up'})
         elif self.path.startswith('/api/state/'):
             session=SESSIONS.get(self.path.split('/')[-1])
@@ -38,11 +46,20 @@ class Handler(BaseHTTPRequestHandler):
             size=int(self.headers.get('Content-Length','0'))
             if not 0<size<10000:raise ValueError('Invalid request size.')
             body=json.loads(self.rfile.read(size))
-            session=Session(body.get('start'),body.get('target'),seed=int(body.get('seed',2306)))
+            pairs=body.get('pairs')
+            if pairs is not None and not isinstance(pairs,list):
+                raise ValueError('pairs must be a list of [start, end] items.')
+            session=Fleet(count=int(body.get('count',50)),
+                          start=body.get('start',DEFAULT_START),
+                          target=body.get('target',DEFAULT_END),
+                          seed=int(body.get('seed',2306)),
+                          pairs=pairs)
             key=uuid.uuid4().hex
             SESSIONS[key]=session
             threading.Thread(target=session.run,daemon=True).start()
-            self.respond({'session':key,'initial':session.initial})
+            self.respond({'session':key,'initial':session.initial,
+                          'depots':session.depots,'zones':session.zones,
+                          'pairs':session.pairs})
         except (ValueError,TypeError,KeyError,json.JSONDecodeError) as exc:
             self.respond({'error':str(exc)},400)
 

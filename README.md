@@ -1,55 +1,209 @@
-# PHYSRUM-GNN: live Guwahati disruption simulator
+# Physarum-GNN: Offline Guwahati Fleet Routing Simulation
 
-**Run the offline browser dashboard (Python 3.10+):**
+An offline experiment that compares two routing policies, classic **Dijkstra** and a **Physarum-inspired GNN** policy, on a simulated fleet operating over an OSM-derived road network of Guwahati, India. Both policies face identical vehicles, road speeds, capacities, congestion math, and hazard events, so the comparison is like for like. Purple dashed connectors are synthetic simulation roads, never verified real streets.
+
+> **How to interpret it:** Neither routing policy is guaranteed to win. Select paths and fleet size, then compare the live arrival curves, final median arrival tick, last-car tick, congestion and routing CPU for that particular simulation. Ticks are simulation steps, not wall-clock seconds or real travel minutes.
+
+---
+
+## Live fleet results
+
+The dashboard derives per-path and combined results from each run. The maximum fleet size is 2,500 vehicles **per policy**. Runs at that limit can take several minutes, and the tick cap may leave some vehicles en route; final median and last-car figures remain unavailable until all vehicles arrive. Previously recorded figures from the narrower map are intentionally omitted because they do not describe this expanded map.
+
+### Single-vehicle CLI benchmark (Maligaon–Kamakhya route, simulated blockade `14255`)
+
+| Method | Valid after closure | Estimated drive | Rerouting latency |
+| --- | --- | ---: | ---: |
+| Fixed pre-disaster route | No | unavailable | 0 ms |
+| Dijkstra rerun | Yes | 5.310 min | 1.072 ms |
+| Physarum | Yes | 5.310 min | 5,467.157 ms |
+| Physarum-GNN | Yes | 5.310 min | 5,649.875 ms |
+
+**How to read these numbers**
+
+- Every method that can reroute finds the same 5.310-minute detour. Dijkstra gets there thousands of times faster.
+- The GNN did not improve route validity or drive time.
+- The results do not support a claim that conventional shortest-path rerouting is static or inferior.
+- Timings come from one run and vary by machine. The default seeded run is reproducible, but measured CPU time is not.
+- The short purple links are simulated for this graph experiment; they are not verified travel corridors.
+
+---
+
+## Quick start
+
+Requires **Python 3.10+**. No internet connection is needed.
 
 ```bash
 python app.py
 ```
 
-The app prints a fresh local `http://127.0.0.1:<port>` address and opens it in your browser. Keep the terminal open; press Ctrl+C to stop. Each launch picks a free port so an earlier demo cannot serve a stale page. Internet and extra packages are not needed.
+The app prints a fresh local address in the terminal. Open it in your browser and keep the terminal running. Press `Ctrl+C` to stop.
 
-The main map is a close-up of the bundled OSM-derived Maligaon-Kamakhya road network: a connected extract with 374 road vertices and 379 directed-aware road segments. Pick a **starting intersection** and **destination** by clicking the map, or use the preselected example. Press **Start live simulation**. The browser shows vehicle positions, current route plans, simulated road closures, and a tick-by-tick comparison. You only select endpoints; the disaster engine chooses seeded random epicenters near future routes every three ticks, using a bypass-preserving closure when possible. Affected roads are removed for both methods. Results are reproducible with the default seed.
-
-A master tick loop advances each vehicle one road per tick. A separate producer thread proposes simulated hazards and uses a lock and condition to synchronize them with the main loop. Dijkstra recomputes from its current position when a closure touches its remaining route and records each recalculation penalty. Physarum-GNN uses bundled trained one-hop edge scores to initialize conductivity once, then retains conductivity and pressure across ticks; each tick solves one warm-started pressure/flux update and extracts a legal route. **That extraction still uses a weighted shortest-path search internally**, so these results do not prove Physarum is algorithmically superior to Dijkstra. The UI reports measured cumulative compute milliseconds, recalculation or route-update counts, estimated road travel minutes, elapsed wall seconds, and ticks to arrival. The 80 ms visual tick interval is a presentation clock, not real-world travel time. Simulated incidents, assumed road-class speeds, and tile-derived connectivity are not suitable for emergency navigation.
-
-The previous static three-scenario Guwahati benchmark and GNN held-out evaluation remain available as an optional CLI experiment.
-
-## Optional CLI benchmark
+Optional: run the CLI benchmark instead.
 
 ```bash
 python main.py
 ```
 
-The demo blocks a simulated road on the original Maligaon-Kamakhya route and runs Dijkstra, warm-start Physarum, and Physarum-GNN on that same closure. Open `output/maligaon_before.svg` and `output/maligaon_after.svg` for the original route and Physarum detour. `output/maligaon_after_dijkstra.svg` and `output/maligaon_after_gnn.svg` show the other paths. The command also runs Jorabat and Panikhaiti scenarios, saves equivalent maps and full paths in `output/*_routes.json`, and writes `output/benchmark.csv` plus `output/model_evaluation.csv`.
+---
 
-## Block your own road
+## Fleet dashboard
+
+### The map
+
+The road close-up now covers about **1.65× the original connected extract**, displaying 768 mapped intersections and 875 visible links. The connected routable area has 518 selectable intersections and 667 links. The 140 purple dashed short joins are synthetic simulation roads, not verified real streets. The animated Physarum and Dijkstra maps fill the available page width and appear one after the other beneath the selection map. All three road maps retain the original pale map background, light road lines, white intersection dots, and readable map labels in either theme. The dashboard opens in a black theme; the theme toggle switches the surrounding interface to light mode if desired.
+
+### Running a comparison
+
+1. **Choose how many start → end paths to simulate** (1 to 10) with the *Number of start → end paths* box. Each path gets its own row in the sidebar.
+2. **Set a start and an end for every path**, either from that row's two node menus or by clicking intersections on the map. Map clicks fill START 1, END 1, START 2, END 2 … in order; press **Pick on map** beside any slot to choose which one the next click sets. On the map, a filled pin is a start and a ringed pin is an end, with one colour per path. A start and end of the same path must differ and be connected by a directed route.
+3. **Set the fleet size.** The default is **50 vehicles per fleet**. Enter a whole number from 1 to 2500 in the number box, or use the synchronized slider. The fleet is the total per policy and must be at least the number of paths.
+4. Press **Dispatch both fleets**.
+
+Vehicles are assigned to paths in turn (vehicle 1 to path 1, vehicle 2 to path 2, and so on), so every path receives an equal share, give or take one vehicle. Each policy gets the same number of vehicles per path, the same selected paths, and the same road speeds, capacities, and hazard events. A micro-disruption is only accepted if every selected path still has a bypass.
+
+> **Note on the results table above:** those numbers were recorded with the earlier fixed layout, in which one selected start/end was paired with a derived nearby second depot and zone (four depot-zone combinations). The page now runs exactly the paths you select, so a one-path run is a different scenario and will give different numbers. Calling `Fleet(count=...)` without `pairs=` still uses the earlier layout.
+
+The page opens with one path (the default Maligaon–Kamakhya route). Raising the path count fills new rows with deterministic, well-separated default paths, which you can change.
+
+While the simulation runs you can watch live traffic, road closures, vehicle locations, and delivery counts, plus a separate route map and report card for each policy. The first graph below compares cumulative arrivals of all vehicles at each simulation tick; the colored dashed lines mark each median arrival tick. Under it, **Per-path timelines** display four paths in a 2×2 desktop grid. Fewer than four paths leave blank slots; ten paths produce three grids of four, with two blank slots in the last grid. Each graph shows only vehicles assigned to that path, with its own median, last-car tick and BPR delay for both policies. Median arrival tick and last-car tick appear only when every vehicle in that fleet has arrived; if the tick cap ends first, final times are unavailable and the live arrival curve still shows progress. Larger fleets take longer to finish and may hit the configured tick cap.
+
+### Report cards
+
+Each policy's card shows:
+
+- Fleet deliveries and the last arrival tick (all paths combined; per-path figures are in the Per-path timelines section)
+- BPR added drive time in minutes, shown separately from aggregate congestion wait ticks
+- Aggregate congestion wait ticks
+- Median arrival tick and last-car tick, shown once every vehicle has arrived
+- Measured routing CPU milliseconds
+- Route update and recalculation counts
+- Roads used
+
+Moving time and queued or waiting ticks are separate metrics. A simulation tick is a visualization clock, not a real travel-time unit.
+
+> **Depot caveat:** the bundled connected component does not include verified ISBT or GMCH sites, nor the named GS Road, VIP Road, or Zoo Road alternatives. The two depots and two zones shown are **simulated positions on the mapped roads**, and the app does not present them as those real facilities.
+
+---
+
+## How the simulation works
+
+### Shared conditions for both policies
+
+- **Road closures.** Both policies see the same temporary closures each tick. A concurrent producer thread proposes seeded micro-disruptions from a pre-event corridor, independently of either policy's current route. A lock and condition coordinate it with the master tick loop.
+- **Closure rules.** Closures last eight ticks and are accepted only where every selected start→end path still has a bypass.
+- **Capacity.** Each road has a class-based capacity, and at most twice that number of vehicles may occupy it. Extra vehicles wait at the preceding intersection.
+- **Congestion model.** For each admitted vehicle, travel duration follows the BPR formula below. The resulting simulated delay is rounded up to ticks. Both policies use identical congestion math. The backend retains the sum of free-flow and BPR road time across vehicles; the dashboard shows median arrival tick and the fleet-wide BPR penalty instead of that confusing aggregate drive-time sum. Vehicles also queue at full roads, and queue time is reported as wait ticks rather than conflated with drive minutes.
+
+```text
+travel time = free-flow time × (1 + 0.30 × (occupancy / capacity)^4)
+```
+
+### The two routing policies
+
+| | Dijkstra | Physarum-GNN |
+| --- | --- | --- |
+| Initial routing | Shortest path per truck at dispatch | Capacity-aware route using conductivity and current occupancy |
+| When it reroutes | Only when the remaining route is blocked, via a fresh search from the truck's current node | Chooses routes from current road occupancy and retained conductivity |
+| Congestion handling | Reactive to blockages only; does not reroute solely because of congestion | Edge scores precomputed once per run; conductivity retained across ticks |
+| Route extraction | Dijkstra | Weighted Dijkstra search internally |
+
+Implementation notes:
+
+- **NumPy is optional.** When installed, all conductivity values update in one vectorized operation. The standard-library fallback runs fully offline.
+- The GUI does **not** run 100 pressure-solver iterations per frame.
+- This is a routing *policy comparison*. It does not show that Physarum has lower algorithmic compute cost.
+
+---
+
+## CLI benchmark
+
+`python main.py` blocks a simulated road on the original Maligaon–Kamakhya route and runs Dijkstra, warm-start Physarum, and Physarum-GNN on that same closure. It also runs the Jorabat and Panikhaiti scenarios.
+
+### Outputs (in `output/`)
+
+| File | Contents |
+| --- | --- |
+| `maligaon_before.svg` | Original route |
+| `maligaon_after.svg` | Physarum detour |
+| `maligaon_after_dijkstra.svg` | Dijkstra path |
+| `maligaon_after_gnn.svg` | Physarum-GNN path |
+| `*_routes.json` | Full paths and equivalent maps for each scenario |
+| `benchmark.csv` | Benchmark results |
+| `model_evaluation.csv` | GNN evaluation: recall of held-out bypass edges among the highest-scoring 5% of predictions |
+
+### Block your own road
+
+List the local road IDs along the original route:
 
 ```bash
 python main.py --scenario maligaon --list-route
+```
+
+Then close one of them, which ensures the original route breaks:
+
+```bash
 python main.py --scenario maligaon --close-edge 14255
 ```
 
-The first command lists local road IDs along the original route. Use one of those IDs in the second command to ensure the original route breaks. Alternatively, run `python main.py --scenario maligaon --interactive` to list IDs and enter one or several comma-separated IDs at a prompt. For multiple closures use `--close-edge 14255,14256`. The IDs refer to segments in the bundled graph, not OSM way IDs. Other choices: `--scenario jorabat`, `--scenario panikhaiti`, or `--close-at 91.854,26.174` with `--scenario panikhaiti` to block the nearest road to a longitude and latitude.
+Other options:
 
-Each method reports whether its path remains valid, estimated drive minutes, rerouting milliseconds, and a route preview. Complete ordered road IDs are in the CSV, and complete route coordinates and map filenames are in `output/maligaon_custom_14255_routes.json` for the example above. Open the corresponding `*_before.svg`, `*_after.svg` (Physarum), `*_after_dijkstra.svg`, and `*_after_gnn.svg`. Custom outputs have distinct filenames and preserve the default maps. An unreachable destination produces an empty path and blank estimated drive time. A closure off the original route can leave the fixed route valid.
+- **Interactive mode:** `python main.py --scenario maligaon --interactive` lists IDs and lets you enter one or several comma-separated IDs at a prompt.
+- **Multiple closures:** `--close-edge 14255,14256`
+- **Other scenarios:** `--scenario jorabat` or `--scenario panikhaiti`
+- **Close by location:** `--close-at 91.854,26.174` with `--scenario panikhaiti` blocks the nearest road to that longitude and latitude.
 
-## Measured comparison
+The IDs refer to segments in the bundled graph, not OSM way IDs.
 
-The fixed pre-disaster route is computed before the closure and validated afterward; zero rerouting time means it never reroutes. Dijkstra recomputes the shortest route with the road removed. Physarum uses pre-event conductivity, solves nodal pressures, computes flux and reinforces used edges while others decay; it then extracts a directed path. The lightweight one-hop GNN modifies its initial conductivity using features and weights learned from simulated closures in separate corridors. Post-closure latency includes GNN inference, Physarum iterations, and path extraction, but excludes offline training and pre-event preparation.
+**Reading the results**
 
-One run on this machine, with simulated blockade 14255:
+- Each method reports whether its path remains valid, estimated drive minutes, rerouting milliseconds, and a route preview.
+- Complete ordered road IDs are in the CSV. Complete route coordinates and map filenames are in `output/maligaon_custom_14255_routes.json` for the example above.
+- Custom runs write distinct filenames (`*_before.svg`, `*_after.svg` for Physarum, `*_after_dijkstra.svg`, `*_after_gnn.svg`) and preserve the default maps.
+- An unreachable destination produces an empty path and a blank estimated drive time.
+- A closure off the original route can leave the fixed route valid.
 
-| Method | Valid after closure | Estimated drive | Rerouting latency |
-| --- | --- | ---: | ---: |
-| Fixed pre-disaster | No | unavailable | 0 ms |
-| Dijkstra rerun | Yes | 5.310 min | 1.072 ms |
-| Physarum | Yes | 5.310 min | 5,467.157 ms |
-| Physarum-GNN | Yes | 5.310 min | 5,649.875 ms |
+### Measurement method
 
-Timings vary by machine. Dijkstra is substantially faster in this experiment; the GNN did not improve validity or drive time. The evaluation CSV reports recall of the held-out bypass edges among the highest-scoring 5% GNN predictions. The results do not support a claim that conventional shortest-path rerouting is static or inferior.
+- The fixed pre-disaster route is computed before the closure and validated afterward. Zero rerouting time means it never reroutes.
+- **Dijkstra** recomputes the shortest route with the closed road removed.
+- **Physarum** starts from pre-event conductivity, solves nodal pressures, computes flux, and reinforces used edges while others decay. It then extracts a directed path.
+- **Physarum-GNN** uses a lightweight one-hop GNN to modify the initial conductivity, with features and weights learned from simulated closures in separate corridors.
+- Post-closure latency includes GNN inference, Physarum iterations, and path extraction. It excludes offline training and pre-event preparation.
 
-## Data and limitations
+---
 
-`data/guwahati_roads.json` bundles 91,923 vertices and 87,662 OSM-derived road segments, including 5,904 marked one-way. Roads and geometries were extracted from bundled OpenFreeMap zoom-14 vector tiles; `python scripts/build_tiles.py` rebuilds the JSON from the cached tiles. Tile generalization can omit minor roads or misconnect junctions, and turn restrictions are unavailable. Endpoint snapping can move the scenario endpoints away from the approximate corridor anchors; check snapped coordinates in each `*_routes.json`. The Panikhaiti experiment covers an eastbound approach toward Chandrapur, not Chandrapur itself. The pressure solver relaxes an undirected electrical network; route extraction enforces one-way roads. Road speeds are assumed from class, without traffic; terrain and flood features are simulated proxies, not measured elevation or flood data. The closures are simulated, not observed events. This is an offline routing experiment and not operational emergency guidance.
+## Data
 
-Retrain with `python main.py --train`; run tests with `python -m unittest discover -s tests -v`. Python standard library only. Road data: [OpenStreetMap contributors](https://www.openstreetmap.org/copyright), ODbL, via [OpenFreeMap](https://openfreemap.org/) vector tiles.
+`data/guwahati_roads.json` bundles **91,923 vertices** and **87,662 OSM-derived road segments**, of which 5,904 are marked one-way. Roads and geometries were extracted from bundled OpenFreeMap zoom-14 vector tiles. To rebuild the JSON from the cached tiles:
+
+```bash
+python scripts/build_tiles.py
+```
+
+## Limitations
+
+- **Simulated, not real.** Speeds, capacities, destinations, congestion, and incident hazards are assumed for this demo. Closures are simulated, not observed events. Disasters and congestion are not live safety data.
+- **Depots and zones are simulated positions**, not the real facilities named above (see the depot caveat).
+- **Tile generalization.** Vector tiles can omit minor roads or misconnect junctions, and turn restrictions are unavailable.
+- **Speeds** are assumed from road class, without traffic. Terrain and flood features are simulated proxies, not measured elevation or flood data.
+- **Endpoint snapping** can move scenario endpoints away from the approximate corridor anchors. Check snapped coordinates in each `*_routes.json`.
+- **Panikhaiti scenario** covers an eastbound approach toward Chandrapur, not Chandrapur itself.
+- **Solver and one-way roads.** The pressure solver relaxes an undirected electrical network, while route extraction enforces one-way roads.
+- **Not operational guidance.** This is an offline routing experiment and must not be used for emergency decisions.
+
+---
+
+## Development
+
+```bash
+python main.py --train                      # retrain the GNN
+python -m unittest discover -s tests -v     # run tests
+python -m pip install numpy                 # optional: vectorized conductivity updates
+```
+
+The project uses the **Python standard library only**; NumPy is an optional accelerator. The original single-vehicle dynamic experiment is kept in `physrum/dynamic.py` for reference.
+
+## Credits
+
+Road data © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright), licensed under ODbL, via [OpenFreeMap](https://openfreemap.org/) vector tiles.
