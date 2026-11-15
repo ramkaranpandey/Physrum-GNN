@@ -1,5 +1,4 @@
 """Seeded fleet comparison on an OSM-derived connected road extract."""
-import copy
 import math
 import queue
 import random
@@ -122,7 +121,8 @@ class Fleet:
                 if not route: raise ValueError('The bundled road extract cannot connect fleet depots and zones.')
                 if method == 'dijkstra': self.initial.append(route)
                 team.append({'node': source, 'target': target, 'pair': pair_index, 'plan': route,
-                             'edge': None, 'remaining': 0, 'wait': 0, 'arrived': False,
+                             'edge': None, 'remaining': 0, 'edge_total': 0,
+                             'wait': 0, 'arrived': False,
                              'arrival_tick': None,
                              'traversed': []})
             self.trucks[method] = team
@@ -158,7 +158,10 @@ class Fleet:
                 self.condition.notify_all()
 
     def get(self):
-        with self.lock: return copy.deepcopy(self.snapshot)
+        # Snapshots are replaced atomically and are never mutated after publish.
+        # Returning the immutable published object avoids copying every truck,
+        # route history and arrival series for every polling request.
+        with self.lock: return self.snapshot
 
     def run(self):
         producer = threading.Thread(target=self.disasters, daemon=True)
@@ -274,6 +277,7 @@ class Fleet:
                         free=GRAPH.minutes(eid)
                         delay=bpr_multiplier(occupancy[method][eid], self.capacity[eid])
                         truck['remaining']=max(1,math.ceil(delay))
+                        truck['edge_total']=truck['remaining']
                         truck['edge']=eid
                         used_edges[method].add(eid)
                         truck['plan']=truck['plan'][1:]
@@ -294,7 +298,9 @@ class Fleet:
                         'numpy_acceleration':np is not None,
                         'density':{m:{str(i):n for i,n in loads.items() if n>0} for m,loads in occupancy.items()},
                         'fleets':{m:{'trucks':[{'node':t['node'],'edge':t['edge'],
-                            'remaining':t['remaining'],'target':t['target'],'pair':t['pair'],
+                            'remaining':t['remaining'],
+                            'progress':(1.0-t['remaining']/t['edge_total']) if t['edge'] is not None and t['edge_total'] else 0.0,
+                            'target':t['target'],'pair':t['pair'],
                             'arrival_tick':t['arrival_tick'],
                             'traversed':t['traversed'], 'route':(t['plan'] or [])[:18]}
                             for t in team], 'arrival_series':arrival_series[m][:],
@@ -321,5 +327,7 @@ class Fleet:
             with self.condition:
                 self.request_tick=-1;self.condition.notify_all()
             with self.lock:
-                self.snapshot['done']=True
-                self.snapshot['elapsed_wall_s']=round(time.perf_counter()-wall_start,3)
+                # Publish a new terminal snapshot rather than mutating one that
+                # may currently be serialized by an HTTP request.
+                self.snapshot={**self.snapshot,'done':True,
+                    'elapsed_wall_s':round(time.perf_counter()-wall_start,3)}
