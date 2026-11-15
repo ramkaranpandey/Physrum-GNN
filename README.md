@@ -1,4 +1,4 @@
-# Physarum-GNN: Offline Guwahati Fleet Routing Simulation
+# Physarum-GNN: Fleet Routing Simulation
 
 An offline experiment that compares two routing policies, classic **Dijkstra** and a **Physarum-inspired GNN** policy, on a simulated fleet operating over an OSM-derived road network of Guwahati, India. Both policies face identical vehicles, road speeds, capacities, congestion math, and hazard events, so the comparison is like for like. Purple dashed connectors are synthetic simulation roads, never verified real streets.
 
