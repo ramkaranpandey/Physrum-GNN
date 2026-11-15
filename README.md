@@ -1,53 +1,94 @@
 
-# 🧬 Physarum-GNN: Bio-Inspired Dynamic Fleet Routing
+# Physarum-GNN: Bio-Inspired Dynamic Fleet Routing Using Spatial Graph Neural Networks
 
-<p align="center">
-  <strong>🌐 LIVE DEMO: <a href="https://ramkaranpandey.github.io/Physrum-GNN/">Visit & Run PHYSRUM-GNN</a></strong>
-</p>
+**Live Simulation:** [https://ramkaranpandey.github.io/Physrum-GNN/](https://ramkaranpandey.github.io/Physrum-GNN/)
 
-**A brainless, single-celled organism—*Physarum polycephalum*, commonly known as the slime mold—demonstrates a remarkable natural approach to solving dynamic network problems.**
+**Visit the live application to explore the road network, run fleet simulations, introduce dynamic disruptions, and compare the performance of two fundamentally different routing approaches.**
 
-Long before modern computing, nature was already experimenting with adaptive networks. Instead of calculating rigid routes, this organism creates a pressurized web of tubes through which nutrients flow. When a path becomes blocked or inefficient, its tubes gradually wither, while useful alternative connections strengthen.
+## 1. Project Overview
 
-**What if we could bring this biological intelligence into modern transportation networks?**
+Billions of years before modern computing, a brainless, single-celled organism known as *Physarum polycephalum* (commonly called slime mold) had already developed a remarkable way of adapting to changing networks.
 
-That's the idea behind **Physarum-GNN**.
+Despite having no brain or centralized decision-making system, Physarum can construct and maintain an interconnected network of tubes to transport nutrients. Its behaviour is governed by fluid dynamics and local feedback mechanisms. Tubes carrying greater amounts of flow tend to strengthen and expand, while less useful or inactive connections gradually weaken and disappear. When conditions change or a route becomes obstructed, the organism can adapt its network by reinforcing alternative connections.
 
-We combine the adaptive fluid-flow and conductivity reinforcement mechanism of *Physarum polycephalum* with a **Spatial Graph Neural Network (GNN)** to explore intelligent, congestion-aware fleet routing under dynamic road conditions.
+This biological behaviour raises an interesting computational question: can the principles governing a simple living organism be translated into an adaptive routing system capable of responding to changing transportation conditions?
 
-We stress-test this approach against conventional **Dijkstra shortest-path routing** on real OpenStreetMap-derived road networks of **Guwahati, Assam, India**.
+**Physarum-GNN** explores this idea by combining the adaptive network behaviour of *Physarum polycephalum* with a Spatial Graph Neural Network (GNN) to investigate dynamic, congestion-aware fleet routing.
 
-### 🚀 Explore the live simulation
+Rather than treating road routing exclusively as a shortest-path problem, the project explores how biological flow adaptation and graph-based learning can be applied to transportation networks where road conditions, congestion, traffic demand, and network disruptions change over time.
 
-**[👉 CLICK HERE TO VISIT & RUN THE LIVE PHYSRUM-GNN SIMULATION](https://ramkaranpandey.github.io/Physrum-GNN/)**
+## 2. Biological Inspiration and Computational Approach
 
-Explore the road network, select start and destination points, dispatch fleets, introduce dynamic disruptions, and compare both routing strategies through an interactive simulation.
+The central inspiration comes from the adaptive tube networks formed by *Physarum polycephalum*. Its network does not depend on a predefined global route. Instead, connections continuously adapt according to local flow conditions.
 
-### ⚡ Two approaches. One dynamic road network.
+The computational model translates this principle into a graph-based transportation environment. Roads are represented as edges, intersections as nodes, and vehicles as sources of traffic demand. Edge conductivity represents the strength of a connection and is adjusted according to the simulated flow and changing network conditions.
 
-| Dijkstra | Physarum-GNN |
-|---|---|
-| Classical shortest-path algorithm | Bio-inspired adaptive routing |
-| Computes shortest routes | Uses conductivity, road occupancy and GNN-informed edge scores |
-| Reacts to blocked routes through rerouting | Adapts routes using retained conductivity and changing road conditions |
-| Efficient for conventional shortest-path problems | Explores adaptive routing under changing network conditions |
+The model explores the interaction between biological adaptation and spatial graph learning. The Physarum-inspired mechanism provides an adaptive network perspective, while the Spatial Graph Neural Network contributes learned representations of the road network and its spatial relationships.
 
-**There is no predetermined winner.**
+Together, these components form the Physarum-GNN routing approach, which is evaluated against conventional Dijkstra shortest-path routing under dynamic simulation conditions.
 
-Dijkstra can outperform Physarum-GNN in stable networks and scenarios where computational efficiency and shortest-path optimality are the priority. Physarum-GNN can offer advantages in certain dynamic, congestion-aware scenarios where adaptive network behaviour is valuable.
+## 3. Comparative Routing Approaches
 
-The winner depends on the scenario, network conditions and evaluation metric. Our objective is not to prove that one algorithm always beats the other, but to investigate where each approach performs best under identical simulation conditions.
+The project evaluates two routing approaches operating on the same underlying road network.
 
-### 🔬 What makes this project interesting?
+### Dijkstra Shortest-Path Routing
 
-- **Bio-inspired computing:** Translating biological fluid-flow behaviour into a computational routing mechanism.
-- **Graph Neural Networks:** Integrating spatial graph learning with adaptive conductivity-based routing.
-- **Dynamic road networks:** Simulating road blockages, congestion, capacity constraints and alternative routes.
-- **Real-world geographical data:** Using OpenStreetMap-derived road infrastructure from Guwahati, Assam.
-- **Comparative evaluation:** Testing both algorithms under the same fleet sizes, road conditions, congestion model and disruption events.
+Dijkstra's algorithm is a classical graph-search algorithm that computes shortest paths using non-negative edge costs. It provides a well-established baseline for evaluating routing performance and is particularly effective when network costs are relatively stable and shortest-path optimality is the primary objective.
 
-**The central question:** Can principles found in a simple biological organism help us develop more adaptive transportation and network-routing systems?
+In dynamic environments, changes in road conditions may require routes to be recalculated so that vehicles can respond to new costs or unavailable connections.
 
+### Physarum-GNN Routing
+
+Physarum-GNN combines biological network adaptation with spatial graph learning. Its approach is based on the principle that useful connections should be reinforced through flow, while less useful connections should gradually lose influence.
+
+The integration of spatial graph learning provides an additional mechanism for representing relationships within the road network. This allows the project to investigate how learned graph information and adaptive conductivity can contribute to routing decisions under changing traffic conditions.
+
+### Why Compare Both?
+
+Neither approach is assumed to be universally superior. Dijkstra provides a strong and computationally efficient baseline for conventional shortest-path problems, while Physarum-GNN investigates the potential advantages of adaptive routing in changing network environments.
+
+Their relative performance depends on the network structure, congestion patterns, disruption scenarios, fleet demand, and the evaluation metric being considered. Dijkstra may perform better in some scenarios, while Physarum-GNN may offer advantages in others.
+
+The purpose of this comparison is to identify the conditions under which each approach is more effective, rather than establish a predetermined winner.
+
+## 4. Real-World Road Network and Simulation Environment
+
+The approaches are evaluated using real OpenStreetMap-derived road network data from Guwahati, Assam, India.
+
+Using geographical road infrastructure provides a more representative environment than relying exclusively on artificially generated graphs. The road network is converted into a graph structure containing intersections, road segments, and their associated spatial and network information.
+
+The simulation environment allows fleet movement and routing behaviour to be examined under changing conditions, including:
+
+- Road congestion and varying traffic demand.
+- Road blockages and network disruptions.
+- Alternative route selection and adaptive rerouting.
+- Multiple vehicles operating across the same road network.
+- Changing network conditions affecting route costs and connectivity.
+- Comparative evaluation of Dijkstra and Physarum-GNN.
+
+The objective is to examine how both routing approaches respond to the same transportation environment and how their behaviour changes as network conditions evolve.
+
+## 5. Live Interactive Simulation
+
+The project includes a browser-based application that connects the frontend dashboard to a Python backend responsible for the simulation and routing operations.
+
+**Live application:** [Visit and run the Physarum-GNN simulation](https://ramkaranpandey.github.io/Physrum-GNN/)
+
+Through the interactive application, users can explore the road network, configure and execute fleet simulations, observe vehicle movement, introduce disruptions, and examine the resulting routing behaviour.
+
+The application provides a visual environment for understanding how different routing strategies respond to the same network conditions, making the comparison more accessible than examining algorithmic outputs alone.
+
+## 6. Research Objective
+
+The broader objective of Physarum-GNN is to investigate the intersection of bio-inspired computing, graph neural networks, and intelligent transportation systems.
+
+By translating biological network adaptation into a computational routing framework and evaluating it against a classical shortest-path baseline, the project explores whether decentralized, flow-based adaptation can contribute to more responsive routing strategies in dynamic transportation environments.
+
+The central research question is:
+
+**Can the adaptive network-forming principles of a simple biological organism, when combined with spatial graph learning, provide useful alternatives to conventional shortest-path routing in dynamic and congestion-prone transportation networks?**
+
+The answer is not assumed in advance. It must emerge from comparative evaluation, simulation results, and the conditions under which each approach operates.
 ## Fleet dashboard
 
 ### The map
