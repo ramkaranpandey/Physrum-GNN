@@ -89,211 +89,430 @@ The central research question is:
 **Can the adaptive network-forming principles of a simple biological organism, when combined with spatial graph learning, provide useful alternatives to conventional shortest-path routing in dynamic and congestion-prone transportation networks?**
 
 The answer is not assumed in advance. It must emerge from comparative evaluation, simulation results, and the conditions under which each approach operates.
-## Fleet dashboard
+## 7. Fleet Dashboard
 
-### The map
+The interactive fleet dashboard provides a visual environment for configuring routing experiments, dispatching multiple vehicles, and comparing Dijkstra and Physarum-GNN under identical network conditions. It combines the geographical road network with live vehicle movement, traffic conditions, route updates, and performance measurements.
 
-The road close-up now covers about **1.65× the original connected extract**, displaying 768 mapped intersections and 875 visible links. The connected routable area has 518 selectable intersections and 667 links. The 140 purple dashed short joins are synthetic simulation roads, not verified real streets. The animated Physarum and Dijkstra maps fill the available page width and appear one after the other beneath the selection map. All three road maps retain the original pale map background, light road lines, white intersection dots, and readable map labels in either theme. The dashboard opens in a black theme; the theme toggle switches the surrounding interface to light mode if desired.
+### 7.1 Road Network Visualization
 
-### Running a comparison
+The main road visualization is based on an expanded geographical extract of the Guwahati road network.
 
-1. **Choose how many start → end paths to simulate** (1 to 10) with the *Number of start → end paths* box. Each path gets its own row in the sidebar.
-2. **Set a start and an end for every path**, either from that row's two node menus or by clicking intersections on the map. Map clicks fill START 1, END 1, START 2, END 2 … in order; press **Pick on map** beside any slot to choose which one the next click sets. On the map, a filled pin is a start and a ringed pin is an end, with one colour per path. A start and end of the same path must differ and be connected by a directed route.
-3. **Set the fleet size.** The default is **50 vehicles per fleet**. Enter a whole number from 1 to 2500 in the number box, or use the synchronized slider. The fleet is the total per policy and must be at least the number of paths.
-4. Press **Dispatch both fleets**.
+The road close-up covers approximately **1.65 times the original connected extract**, displaying 768 mapped intersections and 875 visible links. Within this visualization, the connected routable component contains 518 selectable intersections and 667 links. An additional 140 purple dashed connections represent synthetic short joins introduced for simulation purposes; these connections should not be interpreted as verified real-world streets.
 
-Vehicles are assigned to paths in turn (vehicle 1 to path 1, vehicle 2 to path 2, and so on), so every path receives an equal share, give or take one vehicle. Each policy gets the same number of vehicles per path, the same selected paths, and the same road speeds, capacities, and hazard events. A micro-disruption is only accepted if every selected path still has a bypass.
+The dashboard presents three road-network visualizations:
 
-> **Note on the results table above:** those numbers were recorded with the earlier fixed layout, in which one selected start/end was paired with a derived nearby second depot and zone (four depot-zone combinations). The page now runs exactly the paths you select, so a one-path run is a different scenario and will give different numbers. Calling `Fleet(count=...)` without `pairs=` still uses the earlier layout.
+- **Selection map:** Used to choose the starting and destination intersections for each simulated path.
+- **Physarum map:** Displays the vehicle movement and routing behaviour of the Physarum-GNN fleet.
+- **Dijkstra map:** Displays the corresponding vehicle movement and routing behaviour of the Dijkstra fleet.
 
-The page opens with one path (the default Maligaon–Kamakhya route). Raising the path count fills new rows with deterministic, well-separated default paths, which you can change.
+The two simulation maps occupy the available page width and are displayed sequentially beneath the selection map. All three visualizations retain the original pale geographical background, light road lines, white intersection markers, and readable map labels in both interface themes.
 
-While the simulation runs you can watch live traffic, road closures, vehicle locations, and delivery counts, plus a separate route map and report card for each policy. The first graph below compares cumulative arrivals of all vehicles at each simulation tick; the colored dashed lines mark each median arrival tick. Under it, **Per-path timelines** display four paths in a 2×2 desktop grid. Fewer than four paths leave blank slots; ten paths produce three grids of four, with two blank slots in the last grid. Each graph shows only vehicles assigned to that path, with its own median, last-car tick and BPR delay for both policies. Median arrival tick and last-car tick appear only when every vehicle in that fleet has arrived; if the tick cap ends first, final times are unavailable and the live arrival curve still shows progress. Larger fleets take longer to finish and may hit the configured tick cap.
+The dashboard opens in dark mode by default. A theme toggle is available to switch the surrounding interface to light mode.
 
-### Report cards
+### 7.2 Configuring and Running a Fleet Comparison
 
-Each policy's card shows:
+A comparison experiment is configured by selecting one or more origin-destination paths, specifying the fleet size, and dispatching both routing policies.
 
-- Fleet deliveries and the last arrival tick (all paths combined; per-path figures are in the Per-path timelines section)
-- BPR added drive time in minutes, shown separately from aggregate congestion wait ticks
-- Aggregate congestion wait ticks
-- Median arrival tick and last-car tick, shown once every vehicle has arrived
-- Measured routing CPU milliseconds
-- Route update and recalculation counts
-- Roads used
+**1. Configure the number of paths**
 
-Moving time and queued or waiting ticks are separate metrics. A simulation tick is a visualization clock, not a real travel-time unit.
+Use the *Number of start → end paths* input to select between 1 and 10 paths. Each selected path receives its own configuration row in the sidebar.
 
-> **Depot caveat:** the bundled connected component does not include verified ISBT or GMCH sites, nor the named GS Road, VIP Road, or Zoo Road alternatives. The two depots and two zones shown are **simulated positions on the mapped roads**, and the app does not present them as those real facilities.
+**2. Select starting and destination intersections**
+
+Each path requires a starting intersection and a destination intersection. These can be configured through the corresponding node-selection menus or directly by clicking intersections on the geographical map.
+
+Map selection follows the sequence START 1, END 1, START 2, END 2, and so on. Alternatively, the *Pick on map* control beside an individual selection slot allows the next map click to be assigned to a specific starting or destination point.
+
+The map distinguishes starting intersections using filled markers and destination intersections using ringed markers. Each path is assigned a separate colour to make multiple origin-destination pairs easier to identify.
+
+A starting point and its corresponding destination must be distinct and connected by a valid directed route.
+
+**3. Configure fleet size**
+
+The default configuration uses **50 vehicles per fleet**. The fleet size can be changed through the numerical input or its synchronized slider.
+
+Valid values range from 1 to 2,500 vehicles per fleet. The selected fleet size must be at least equal to the number of configured paths so that every path can receive at least one vehicle.
+
+**4. Dispatch both fleets**
+
+Press **Dispatch both fleets** to begin the comparison.
+
+Vehicles are assigned to the selected paths sequentially. Vehicle 1 is assigned to path 1, vehicle 2 to path 2, and subsequent vehicles follow the same ordering. Consequently, vehicles are distributed as evenly as possible across all selected paths, with any remainder assigned to the earlier paths.
+
+Both routing policies receive exactly the same number of vehicles on each path and operate under identical starting conditions, selected destinations, road speeds, road capacities, and hazard events.
+
+Micro-disruptions are accepted only when every selected origin-destination path retains an available bypass.
+
+### 7.3 Default Configuration and Interpretation of Results
+
+The dashboard initially loads with a single origin-destination path corresponding to the default Maligaon–Kamakhya route.
+
+Increasing the number of paths automatically populates the additional configuration rows with deterministic, spatially separated default paths. These automatically selected paths can be modified before dispatch.
+
+**Important distinction regarding previously recorded benchmark results:**
+
+The results table presented earlier in this project was generated using a previous fixed configuration. That configuration paired one selected starting and destination point with a derived nearby second depot and zone, producing four depot-zone combinations.
+
+The current dashboard no longer follows that fixed arrangement. It executes exactly the origin-destination paths selected by the user. Therefore, a simulation involving one selected path represents a different experimental scenario and should not be directly compared with results generated using the earlier four-combination configuration.
+
+For backward compatibility, calling `Fleet(count=...)` without explicitly providing `pairs=` continues to use the earlier configuration.
+
+### 7.4 Live Simulation and Performance Visualization
+
+During execution, the dashboard displays the evolving state of both fleets, including vehicle positions, road traffic, temporary closures, and delivery progress.
+
+Each routing policy has its own route visualization and performance report card. This allows the two fleets to be examined independently while retaining identical simulation conditions.
+
+The first performance graph compares the cumulative number of vehicle arrivals at each simulation tick. Coloured dashed lines indicate the corresponding median arrival ticks for the two policies.
+
+The subsequent **Per-path timelines** section presents individual path-level results in a 2 × 2 desktop grid. Each graph contains data only for vehicles assigned to its corresponding origin-destination path.
+
+For each path, the timelines report:
+
+- Median vehicle arrival tick.
+- Last vehicle arrival tick.
+- BPR congestion-related drive-time penalty.
+- Separate arrival curves for Dijkstra and Physarum-GNN.
+
+When fewer than four paths are selected, the unused grid positions remain blank. Configurations containing more than four paths are displayed in additional grids. For example, ten paths produce three grids, with two unused positions in the final grid.
+
+Median arrival time and last-car time are reported only after every vehicle in the corresponding fleet has arrived. If the configured simulation tick limit is reached before completion, final arrival-time statistics remain unavailable, although the live arrival curves continue to display the progress achieved during the simulation.
+
+Larger fleets require more simulation work and may take longer to complete. Depending on the selected fleet size and network conditions, some experiments may reach the configured tick limit before all vehicles arrive.
+
+### 7.5 Performance Report Cards
+
+Each routing policy has an independent report card containing the following measurements:
+
+- **Fleet deliveries:** Total number of vehicles that successfully reach their destinations across all selected paths.
+- **Last arrival tick:** Simulation tick at which the final vehicle arrives, reported only after complete fleet delivery.
+- **BPR added drive time:** Additional simulated driving time attributable to congestion, expressed in minutes.
+- **Aggregate congestion wait:** Total waiting time accumulated by vehicles encountering capacity-constrained roads, reported in simulation ticks.
+- **Median arrival tick:** Median vehicle arrival time, available after the entire fleet completes its journey.
+- **Measured routing CPU time:** CPU time attributed to routing computations, reported in milliseconds.
+- **Route updates and recalculations:** Number of routing updates and recalculation operations performed during the experiment.
+- **Roads used:** Road connections utilized by the corresponding fleet.
+
+Driving time and congestion-related waiting time are treated as separate quantities. The BPR metric measures additional driving time resulting from congestion, whereas aggregate wait ticks represent time spent waiting when road capacity is exhausted.
+
+A simulation tick represents the internal visualization and simulation clock. It should not be interpreted directly as a unit of real-world travel time.
+
+### 7.6 Depot and Zone Representation
+
+The bundled connected road-network component does not contain verified locations for the actual ISBT or GMCH facilities, nor does it include verified alternative road corridors corresponding to the named GS Road, VIP Road, and Zoo Road locations.
+
+The two depots and two zones displayed by the application are therefore simulated positions placed on the mapped road network. They are used to construct reproducible routing scenarios and must not be interpreted as the actual geographical locations of those facilities.
 
 ---
 
-## How the simulation works
+## 8. Simulation Architecture and Routing Methodology
 
-### Shared conditions for both policies
+The simulation evaluates both routing policies within a shared transportation environment. Road conditions, congestion calculations, vehicle demand, and disruption events are synchronized so that differences in observed performance arise from the routing approaches rather than different environmental inputs.
 
-- **Road closures.** Both policies see the same temporary closures each tick. A concurrent producer thread proposes seeded micro-disruptions from a pre-event corridor, independently of either policy's current route. A lock and condition coordinate it with the master tick loop.
-- **Closure rules.** Closures last eight ticks and are accepted only where every selected start→end path still has a bypass.
-- **Capacity.** Each road has a class-based capacity, and at most twice that number of vehicles may occupy it. Extra vehicles wait at the preceding intersection.
-- **Congestion model.** For each admitted vehicle, travel duration follows the BPR formula below. The resulting simulated delay is rounded up to ticks. Both policies use identical congestion math. The backend retains the sum of free-flow and BPR road time across vehicles; the dashboard shows median arrival tick and the fleet-wide BPR penalty instead of that confusing aggregate drive-time sum. Vehicles also queue at full roads, and queue time is reported as wait ticks rather than conflated with drive minutes.
+### 8.1 Shared Simulation Conditions
+
+**Road closures and disruption generation**
+
+Both routing policies experience the same temporary road closures during each simulation tick.
+
+A separate producer thread proposes seeded micro-disruptions using a predefined pre-event corridor. The disruption-generation process operates independently of the current route selected by either routing policy.
+
+A synchronization mechanism based on a lock and condition variable coordinates the disruption producer with the master simulation tick loop.
+
+**Closure duration and acceptance**
+
+Temporary closures remain active for eight simulation ticks.
+
+A proposed closure is accepted only when every selected origin-destination path retains at least one valid bypass. This prevents a disruption from making a configured experiment structurally impossible.
+
+**Road capacity constraints**
+
+Each road is assigned a capacity based on its road class. The maximum permitted occupancy is twice the assigned capacity.
+
+When the number of vehicles attempting to occupy a road exceeds this limit, additional vehicles wait at the preceding intersection until space becomes available.
+
+This mechanism allows the simulation to represent congestion through both increased travel duration and explicit vehicle queues.
+
+**Congestion modelling**
+
+Vehicle travel duration is calculated using the Bureau of Public Roads (BPR) congestion function.
+
+For each admitted vehicle, the travel duration is determined by the road's free-flow travel time and the ratio between its current occupancy and assigned capacity.
+
+The congestion calculation is expressed as:
 
 ```text
 travel time = free-flow time × (1 + 0.30 × (occupancy / capacity)^4)
 ```
 
-### The two routing policies
+The resulting simulated travel duration is rounded upward to the required number of simulation ticks.
 
-| | Dijkstra | Physarum-GNN |
-| --- | --- | --- |
-| Initial routing | Shortest path per truck at dispatch | Capacity-aware route using conductivity and current occupancy |
-| When it reroutes | Only when the remaining route is blocked, via a fresh search from the truck's current node | Chooses routes from current road occupancy and retained conductivity |
-| Congestion handling | Reactive to blockages only; does not reroute solely because of congestion | Edge scores precomputed once per run; conductivity retained across ticks |
-| Route extraction | Dijkstra | Weighted Dijkstra search internally |
+Both routing policies use identical BPR congestion calculations. The backend retains the accumulated free-flow and congestion-adjusted road travel time across vehicles. However, the dashboard separates the BPR congestion penalty from aggregate queue waiting time rather than combining them into a single potentially misleading travel-time measurement.
 
-Implementation notes:
+Consequently, vehicles experience two distinct sources of delay:
 
-- **NumPy is optional.** When installed, all conductivity values update in one vectorized operation. The standard-library fallback runs fully offline.
-- The GUI does **not** run 100 pressure-solver iterations per frame.
-- This is a routing *policy comparison*. It does not show that Physarum has lower algorithmic compute cost.
+1. Additional driving duration caused by congestion on occupied roads.
+2. Queueing time incurred when road capacity prevents immediate entry.
+
+These quantities are reported independently.
+
+### 8.2 Routing Policy Comparison
+
+The project compares two routing policies that approach network adaptation differently.
+
+| Routing characteristic | Dijkstra | Physarum-GNN |
+|---|---|---|
+| Initial routing | Computes the shortest path for each vehicle at dispatch | Selects a capacity-aware route using conductivity and current road occupancy |
+| Rerouting condition | Recalculates only when the remaining route becomes blocked, starting from the vehicle's current node | Selects routes using current road occupancy and retained edge conductivity |
+| Congestion response | Responds to blockages but does not reroute solely because of congestion | Incorporates occupancy and retained conductivity into route selection |
+| Route extraction | Dijkstra shortest-path search | Weighted Dijkstra search over adaptive edge scores |
+| Network adaptation | Reactive route recalculation | Adaptive routing through retained conductivity and changing network conditions |
+
+The comparison is intended to examine the behaviour of a conventional shortest-path baseline against a biologically inspired adaptive routing policy.
+
+The distinction is important: the Physarum-GNN implementation does not replace shortest-path search with a completely different path-extraction algorithm. Instead, it modifies the edge weights used during route selection through its conductivity-based mechanism and GNN-informed information. Weighted Dijkstra is then used internally to extract a directed route.
+
+### 8.3 Implementation Details
+
+**Optional NumPy acceleration**
+
+NumPy is an optional dependency. When available, conductivity updates are performed through vectorized operations, allowing multiple edge values to be updated in a single operation.
+
+When NumPy is unavailable, the implementation falls back to standard-library operations and remains capable of running offline.
+
+**Visualization and pressure-solver separation**
+
+The graphical interface does not execute 100 pressure-solver iterations during every visualization frame. Simulation computation and visual presentation are separated to avoid unnecessarily coupling the rendering process to the full numerical workload.
+
+**Interpretation of computational performance**
+
+This is a comparison of routing policies and their behaviour under shared simulation conditions. It should not be interpreted as evidence that Physarum-GNN necessarily has a lower computational cost than Dijkstra.
+
+Routing quality, arrival performance, congestion behaviour, and computational overhead are distinct evaluation dimensions and should be interpreted separately.
 
 ---
 
-## CLI benchmark
+## 9. Command-Line Benchmarking
 
-`python main.py` blocks a simulated road on the original Maligaon–Kamakhya route and runs Dijkstra, warm-start Physarum, and Physarum-GNN on that same closure. It also runs the Jorabat and Panikhaiti scenarios.
+In addition to the interactive dashboard, the project provides a command-line benchmarking environment for evaluating route selection under controlled road-network disruptions.
 
-### Outputs (in `output/`)
+Running:
 
-| File | Contents |
-| --- | --- |
-| `maligaon_before.svg` | Original route |
-| `maligaon_after.svg` | Physarum detour |
-| `maligaon_after_dijkstra.svg` | Dijkstra path |
-| `maligaon_after_gnn.svg` | Physarum-GNN path |
-| `*_routes.json` | Full paths and equivalent maps for each scenario |
-| `benchmark.csv` | Benchmark results |
-| `model_evaluation.csv` | GNN evaluation: recall of held-out bypass edges among the highest-scoring 5% of predictions |
+```bash
+python main.py
+```
 
-### Block your own road
+executes the default benchmarking workflow. It blocks a road segment on the original Maligaon–Kamakhya route and evaluates three approaches under the same closure:
 
-List the local road IDs along the original route:
+- Dijkstra shortest-path routing.
+- Warm-start Physarum routing.
+- Physarum-GNN routing.
+
+The benchmark also executes the Jorabat and Panikhaiti scenarios, providing additional geographical and network configurations for evaluating route adaptation.
+
+### 9.1 Benchmark Outputs
+
+Generated files are stored in the `output/` directory.
+
+| File | Description |
+|---|---|
+| `maligaon_before.svg` | Road network and original route before the disruption |
+| `maligaon_after.svg` | Route selected by the Physarum approach after the disruption |
+| `maligaon_after_dijkstra.svg` | Route selected by Dijkstra after the disruption |
+| `maligaon_after_gnn.svg` | Route selected by Physarum-GNN after the disruption |
+| `*_routes.json` | Complete route information and equivalent geographical representations for each scenario |
+| `benchmark.csv` | Comparative benchmarking measurements |
+| `model_evaluation.csv` | GNN evaluation results, including recall of held-out bypass edges among the highest-scoring 5% of predictions |
+
+### 9.2 Identifying Road Segments Along a Route
+
+To inspect the local road-segment IDs associated with the original Maligaon–Kamakhya route, run:
 
 ```bash
 python main.py --scenario maligaon --list-route
 ```
 
-Then close one of them, which ensures the original route breaks:
+The command displays the road IDs along the selected route.
+
+To close a specific road segment and force the original route to become unavailable, use:
 
 ```bash
 python main.py --scenario maligaon --close-edge 14255
 ```
 
-Other options:
+The specified road ID is an example and should be replaced with an ID obtained from the route listing.
 
-- **Interactive mode:** `python main.py --scenario maligaon --interactive` lists IDs and lets you enter one or several comma-separated IDs at a prompt.
-- **Multiple closures:** `--close-edge 14255,14256`
-- **Other scenarios:** `--scenario jorabat` or `--scenario panikhaiti`
-- **Close by location:** `--close-at 91.854,26.174` with `--scenario panikhaiti` blocks the nearest road to that longitude and latitude.
+### 9.3 Additional Benchmark Options
 
-The IDs refer to segments in the bundled graph, not OSM way IDs.
+The command-line interface supports several additional configurations.
 
-**Reading the results**
+**Interactive road selection**
 
-- Each method reports whether its path remains valid, estimated drive minutes, rerouting milliseconds, and a route preview.
-- Complete ordered road IDs are in the CSV. Complete route coordinates and map filenames are in `output/maligaon_custom_14255_routes.json` for the example above.
-- Custom runs write distinct filenames (`*_before.svg`, `*_after.svg` for Physarum, `*_after_dijkstra.svg`, `*_after_gnn.svg`) and preserve the default maps.
-- An unreachable destination produces an empty path and a blank estimated drive time.
-- A closure off the original route can leave the fixed route valid.
+```bash
+python main.py --scenario maligaon --interactive
+```
 
-### Measurement method
+This mode lists the relevant road IDs and allows one or more IDs to be entered interactively as comma-separated values.
 
-- The fixed pre-disaster route is computed before the closure and validated afterward. Zero rerouting time means it never reroutes.
-- **Dijkstra** recomputes the shortest route with the closed road removed.
-- **Physarum** starts from pre-event conductivity, solves nodal pressures, computes flux, and reinforces used edges while others decay. It then extracts a directed path.
-- **Physarum-GNN** uses a lightweight one-hop GNN to modify the initial conductivity, with features and weights learned from simulated closures in separate corridors.
-- Post-closure latency includes GNN inference, Physarum iterations, and path extraction. It excludes offline training and pre-event preparation.
+**Multiple road closures**
+
+```bash
+python main.py --scenario maligaon --close-edge 14255,14256
+```
+
+This allows multiple road segments to be blocked within the same experiment.
+
+**Alternative geographical scenarios**
+
+```bash
+python main.py --scenario jorabat
+```
+
+```bash
+python main.py --scenario panikhaiti
+```
+
+These commands execute the corresponding predefined geographical scenarios.
+
+**Location-based road closure**
+
+```bash
+python main.py --scenario panikhaiti --close-at 91.854,26.174
+```
+
+This option blocks the road segment nearest to the specified longitude and latitude.
+
+The road IDs used by these commands refer to segments in the bundled graph and are not OpenStreetMap way IDs.
+
+### 9.4 Interpreting Benchmark Results
+
+Each routing method reports whether its resulting path remains valid, its estimated driving duration, the time required for rerouting, and a route preview.
+
+The benchmark CSV contains complete ordered road IDs for the evaluated routes. Corresponding route coordinates and generated map filenames are available in the scenario-specific JSON output.
+
+For example, a custom Maligaon experiment closing road segment `14255` produces:
+
+```text
+output/maligaon_custom_14255_routes.json
+```
+
+Custom experiments generate distinct output files, including:
+
+- `*_before.svg`
+- `*_after.svg`
+- `*_after_dijkstra.svg`
+- `*_after_gnn.svg`
+
+The default benchmark maps are preserved rather than overwritten by custom experiments.
+
+If a destination becomes unreachable, the corresponding method returns an empty path and its estimated driving time is left blank.
+
+A closure that does not intersect the original route may leave the original fixed route valid. In such cases, the experiment does not necessarily require rerouting.
+
+### 9.5 Benchmark Measurement Methodology
+
+The benchmarking process distinguishes between the original pre-disruption route and the route selected after the network changes.
+
+**Original route**
+
+The fixed pre-disaster route is computed before the closure is introduced and validated again afterward. If it remains valid, the original route can be retained without recalculation. A reported rerouting time of zero therefore means that no rerouting operation was required.
+
+**Dijkstra**
+
+After a road closure, Dijkstra computes a new shortest path with the closed road removed from the graph. The search is performed from the relevant origin to the destination under the updated network conditions.
+
+**Physarum**
+
+The warm-start Physarum approach begins with the conductivity state established before the disruption. It solves nodal pressures, calculates the resulting edge flux, and reinforces used connections while allowing less-used connections to decay.
+
+A directed route is subsequently extracted from the updated network.
+
+**Physarum-GNN**
+
+Physarum-GNN uses a lightweight one-hop Graph Neural Network to modify the initial conductivity values.
+
+Its features and weights are learned from simulated road closures occurring in separate corridors. The resulting GNN-informed conductivity is then used by the Physarum-based routing mechanism to evaluate the disrupted network.
+
+**Post-disruption computational latency**
+
+The reported post-closure latency includes GNN inference, Physarum iterations, and route extraction.
+
+It excludes offline model training and pre-event preparation. This distinction is important when interpreting the computational measurements because the benchmark evaluates the cost of responding to a disruption rather than the total cost of developing or training the model.
 
 ---
 
-## Data
+## 10. Road Network Data
 
-`data/guwahati_roads.json` bundles **91,923 vertices** and **87,662 OSM-derived road segments**, of which 5,904 are marked one-way. Roads and geometries were extracted from bundled OpenFreeMap zoom-14 vector tiles. To rebuild the JSON from the cached tiles:
+The project includes a bundled geographical road-network dataset stored at:
+
+```text
+data/guwahati_roads.json
+```
+
+The dataset contains **91,923 vertices and 87,662 OpenStreetMap-derived road segments**, of which 5,904 are marked as one-way roads.
+
+Road geometries and network information were extracted from bundled OpenFreeMap vector tiles at zoom level 14. The resulting dataset provides the geographical and graph-based infrastructure used by the simulation and routing algorithms.
+
+The bundled JSON file allows the project to operate using local road-network data without requiring a live external map-data request during simulation.
+
+To rebuild the road-network JSON from the cached vector tiles, execute:
 
 ```bash
 python scripts/build_tiles.py
 ```
 
-## Limitations
-
-- **Simulated, not real.** Speeds, capacities, destinations, congestion, and incident hazards are assumed for this demo. Closures are simulated, not observed events. Disasters and congestion are not live safety data.
-- **Depots and zones are simulated positions**, not the real facilities named above (see the depot caveat).
-- **Tile generalization.** Vector tiles can omit minor roads or misconnect junctions, and turn restrictions are unavailable.
-- **Speeds** are assumed from road class, without traffic. Terrain and flood features are simulated proxies, not measured elevation or flood data.
-- **Endpoint snapping** can move scenario endpoints away from the approximate corridor anchors. Check snapped coordinates in each `*_routes.json`.
-- **Panikhaiti scenario** covers an eastbound approach toward Chandrapur, not Chandrapur itself.
-- **Solver and one-way roads.** The pressure solver relaxes an undirected electrical network, while route extraction enforces one-way roads.
-- **Not operational guidance.** This is an offline routing experiment and must not be used for emergency decisions.
+The resulting dataset is used by the application to construct the road graph and support route selection, vehicle movement, congestion calculations, and disruption experiments.
 
 ---
 
-## Development
+## 11. Limitations and Modelling Assumptions
 
-```bash
-python main.py --train                      # retrain the GNN
-python -m unittest discover -s tests -v     # run tests
-python -m pip install numpy                 # optional: vectorized conductivity updates
-```
+The project is a computational simulation of adaptive routing behaviour. Its results should be interpreted within the assumptions and limitations of the underlying road data, traffic model, routing algorithms, and geographical representation.
 
-The project uses the **Python standard library only**; NumPy is an optional accelerator. The original single-vehicle dynamic experiment is kept in `physrum/dynamic.py` for reference.
+**Simulated traffic conditions**
 
-## Credits
+Vehicle speeds, road capacities, destinations, congestion patterns, and incident hazards are assumed or generated for experimental purposes. Road closures represent simulated disruptions rather than verified real-world traffic incidents.
 
-Road data © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright), licensed under ODbL, via [OpenFreeMap](https://openfreemap.org/) vector tiles.
+The application does not use live traffic measurements or provide real-time safety information.
+
+**Simulated depots and zones**
+
+The displayed depot and zone locations are simulated positions on the bundled road network. They should not be interpreted as verified locations of ISBT, GMCH, or other named facilities.
+
+**Road-network generalization**
+
+The geographical network is derived from vector tiles. Tile generalization may omit minor roads, simplify road geometries, or produce imperfect junction connectivity. Detailed turn restrictions are not available in the bundled representation.
+
+**Assumed road speeds**
+
+Road speeds are assigned using assumed road-class-based values rather than measured traffic speeds. Terrain and flood-related characteristics are represented through simulated proxies and should not be interpreted as measured elevation or observed flood conditions.
+
+**Endpoint snapping**
+
+Selected scenario endpoints may be snapped to nearby intersections in the bundled graph. This can cause the final simulation coordinates to differ from the approximate geographical corridor anchors. The snapped coordinates can be inspected in the corresponding `*_routes.json` files.
+
+**Panikhaiti scenario coverage**
+
+The Panikhaiti scenario represents an eastbound approach toward Chandrapur rather than a route terminating within Chandrapur itself.
+
+**Pressure-solver and one-way road distinction**
+
+The Physarum pressure solver operates on an undirected electrical-network representation. However, route extraction enforces the directionality of one-way roads. Consequently, the physical assumptions of the pressure-solving stage and the directed constraints of the final route-selection stage are not identical.
+
+**Not intended for operational navigation**
+
+This project is an experimental routing and simulation framework. Its outputs should not be used for emergency response, operational fleet dispatch, or real-world transportation decisions without independent validation against reliable traffic, road, and safety data.
 
 ---
 
-## Deploy online (GitHub Pages + Render)
+The project primarily uses the **Python standard library**, with NumPy available as an optional accelerator. The original single-vehicle dynamic routing experiment is retained in `physrum/dynamic.py` for reference.
 
-The dashboard is a static page, while the fleet API and simulation run in Python. GitHub Pages cannot run `app.py`, so deploy the Python service separately and point the static page at it. The included `render.yaml` creates a free Python web service in Render’s Singapore region.
+## 12. Credits and Data Attribution
 
-### 1. Deploy the backend on Render
+The geographical road-network data used in this project is derived from OpenStreetMap contributors and distributed through OpenFreeMap vector tiles.
 
-1. Push this project (including `app.py`, `physrum/`, `data/`, `requirements.txt`, `render.yaml`, and `.python-version`) to a GitHub repository.
-2. In Render, choose **New + → Blueprint**, connect that repository, and deploy the `render.yaml` service. Alternatively create a Python Web Service with build command `pip install -r requirements.txt` and start command `python app.py`.
-3. Wait for the service to become Live. Copy its public URL, such as `https://physrum-fleet-api.onrender.com`.
-4. Open `https://YOUR-RENDER-URL/healthz`; it should return JSON with `"status":"ok"`.
+- Road data: [© OpenStreetMap contributors](https://www.openstreetmap.org/copyright)
+- Vector tile provider: [OpenFreeMap](https://openfreemap.org/)
+- OpenStreetMap data is licensed under the Open Database License (ODbL).
 
-### 2. Connect GitHub Pages to Render
-
-1. In the repository's GitHub Pages source folder, keep `index.html`, `fleet.html`, and `config.js` together.
-2. Edit `config.js` and set `window.PHYSRUM_API_BASE` to the exact Render URL (no trailing slash), for example:
-
-   ```js
-   window.PHYSRUM_API_BASE = 'https://physrum-fleet-api.onrender.com';
-   ```
-
-3. Commit and push. GitHub Pages will serve `index.html`; its requests for `/api/map`, `/api/start`, and `/api/state/...` will go to Render.
-4. In **Settings → Pages**, publish from the branch and folder containing `index.html` (for example, `main` / `/root`). Open the GitHub Pages URL, hard-refresh, and check that the map loads before starting a fleet.
-
-### Performance notes (Render deployment)
-
-The deployed dashboard includes conservative performance improvements that do not change routing decisions, GNN scores, congestion equations, disruption timing, tick duration, or delivery metrics:
-
-- Free-flow road-edge times are precomputed once and reused by Dijkstra; dynamic Physarum edge costs are still recalculated from the same conductivity and occupancy formula.
-- Published simulation snapshots are read without deep-copying the full fleet state for every API poll. Each tick still runs and records the same simulation state.
-- JSON API responses use low-level gzip compression when the browser advertises support, reducing map/state transfer size.
-- Vehicle markers interpolate between backend snapshots using per-edge tick progress, so movement looks continuous instead of remaining pinned at an edge endpoint.
-- Frontend state polling is sequential (no overlapping requests) and skips duplicate ticks, reducing unnecessary server and browser work.
-
-A local repeat benchmark for 100 vehicles per policy completed in approximately 8.5–8.7 seconds over 190 simulation ticks on the test environment; actual Render time will vary with shared free-instance CPU and network conditions. This is a local measurement, not a performance guarantee.
-
-### 3. Local development
-
-Leave `config.js` as an empty string and run `python app.py`. The page uses the same-origin local API at `http://localhost:8000`.
-
-### Notes
-
-- Render's free web services may sleep after inactivity; the first request after sleep can take a little while.
-- Simulation sessions are held in the backend process memory. Keep one Render instance/process for this demo; restarting or redeploying the service ends active simulations.
-- `CORS_ALLOWED_ORIGINS` is set to `*` in the included starter Blueprint so GitHub Pages can call the API without extra setup. For a restricted production deployment, replace it with your exact GitHub Pages origin (for example `https://YOUR-USER.github.io`).
-- The road graph is loaded from the bundled local data; no external map API key is required.
+The project uses these geographical resources to construct a reproducible road-network environment for studying bio-inspired routing, graph-based learning, and dynamic fleet simulation.
