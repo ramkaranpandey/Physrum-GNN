@@ -13,10 +13,10 @@
     26.1751397
   ],
   "maps": {
-    "before": "output\\panikhaiti_before.svg",
-    "Dijkstra rerun": "output\\panikhaiti_after_dijkstra.svg",
-    "Physarum": "output\\panikhaiti_after.svg",
-    "Physarum-GNN": "output\\panikhaiti_after_gnn.svg"
+    "before": "output/panikhaiti_before.svg",
+    "Dijkstra rerun": "output/panikhaiti_after_dijkstra.svg",
+    "Physarum": "output/panikhaiti_after.svg",
+    "Physarum-GNN": "output/panikhaiti_after_gnn.svg"
   },
   "methods": {
     "Fixed pre-disaster": {
@@ -867,7 +867,7 @@
     "Dijkstra rerun": {
       "valid_after_closure": true,
       "estimated_drive_min": 13.583,
-      "reroute_ms": 3.84,
+      "reroute_ms": 2.487,
       "path": {
         "edge_ids": [
           67065,
@@ -1937,7 +1937,7 @@
     "Physarum": {
       "valid_after_closure": true,
       "estimated_drive_min": 13.583,
-      "reroute_ms": 4441.625,
+      "reroute_ms": 2850.583,
       "path": {
         "edge_ids": [
           67065,
@@ -3007,7 +3007,7 @@
     "Physarum-GNN": {
       "valid_after_closure": true,
       "estimated_drive_min": 13.583,
-      "reroute_ms": 4760.155,
+      "reroute_ms": 2934.973,
       "path": {
         "edge_ids": [
           67065,

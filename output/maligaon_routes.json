@@ -13,10 +13,10 @@
     26.1834971
   ],
   "maps": {
-    "before": "output\\maligaon_before.svg",
-    "Dijkstra rerun": "output\\maligaon_after_dijkstra.svg",
-    "Physarum": "output\\maligaon_after.svg",
-    "Physarum-GNN": "output\\maligaon_after_gnn.svg"
+    "before": "output/maligaon_before.svg",
+    "Dijkstra rerun": "output/maligaon_after_dijkstra.svg",
+    "Physarum": "output/maligaon_after.svg",
+    "Physarum-GNN": "output/maligaon_after_gnn.svg"
   },
   "methods": {
     "Fixed pre-disaster": {
@@ -222,7 +222,7 @@
     "Dijkstra rerun": {
       "valid_after_closure": true,
       "estimated_drive_min": 5.31,
-      "reroute_ms": 1.079,
+      "reroute_ms": 1.735,
       "path": {
         "edge_ids": [
           14251,
@@ -562,7 +562,7 @@
     "Physarum": {
       "valid_after_closure": true,
       "estimated_drive_min": 5.31,
-      "reroute_ms": 5588.225,
+      "reroute_ms": 5415.915,
       "path": {
         "edge_ids": [
           14251,
@@ -902,7 +902,7 @@
     "Physarum-GNN": {
       "valid_after_closure": true,
       "estimated_drive_min": 5.31,
-      "reroute_ms": 5897.674,
+      "reroute_ms": 4149.413,
       "path": {
         "edge_ids": [
           14251,

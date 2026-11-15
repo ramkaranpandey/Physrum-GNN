@@ -13,10 +13,10 @@
     26.107513
   ],
   "maps": {
-    "before": "output\\jorabat_before.svg",
-    "Dijkstra rerun": "output\\jorabat_after_dijkstra.svg",
-    "Physarum": "output\\jorabat_after.svg",
-    "Physarum-GNN": "output\\jorabat_after_gnn.svg"
+    "before": "output/jorabat_before.svg",
+    "Dijkstra rerun": "output/jorabat_after_dijkstra.svg",
+    "Physarum": "output/jorabat_after.svg",
+    "Physarum-GNN": "output/jorabat_after_gnn.svg"
   },
   "methods": {
     "Fixed pre-disaster": {
@@ -807,7 +807,7 @@
     "Dijkstra rerun": {
       "valid_after_closure": true,
       "estimated_drive_min": 7.962,
-      "reroute_ms": 1.335,
+      "reroute_ms": 0.956,
       "path": {
         "edge_ids": [
           75002,
@@ -2702,7 +2702,7 @@
     "Physarum": {
       "valid_after_closure": true,
       "estimated_drive_min": 7.962,
-      "reroute_ms": 2150.501,
+      "reroute_ms": 1428.9,
       "path": {
         "edge_ids": [
           75002,
@@ -4597,7 +4597,7 @@
     "Physarum-GNN": {
       "valid_after_closure": true,
       "estimated_drive_min": 7.962,
-      "reroute_ms": 2218.581,
+      "reroute_ms": 1387.31,
       "path": {
         "edge_ids": [
           75002,
