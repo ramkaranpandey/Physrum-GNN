@@ -1,6 +1,5 @@
 """Offline dynamic Guwahati routing lab: python app.py."""
 import json
-import gzip
 import os
 import threading
 import uuid
@@ -31,17 +30,9 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header('Access-Control-Allow-Headers','Content-Type')
         self.send_header('Access-Control-Max-Age','86400')
     def respond(self,value,status=200):
-        data=json.dumps(value,separators=(',',':')).encode('utf8')
-        # Low-level gzip reduces large map/state responses over the network;
-        # browsers transparently decompress fetch() responses.
-        if len(data)>1024 and 'gzip' in self.headers.get('Accept-Encoding','').lower():
-            data=gzip.compress(data,compresslevel=1)
-            compressed=True
-        else:
-            compressed=False
+        data=json.dumps(value).encode('utf8')
         self.send_response(status);self.send_header('Content-Type','application/json; charset=utf-8')
         self.send_header('Content-Length',str(len(data)));self.send_header('Cache-Control','no-store')
-        if compressed:self.send_header('Content-Encoding','gzip')
         self.cors_headers()
         self.end_headers();self.wfile.write(data)
     def do_OPTIONS(self):

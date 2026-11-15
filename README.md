@@ -233,18 +233,6 @@ The dashboard is a static page, while the fleet API and simulation run in Python
 3. Commit and push. GitHub Pages will serve `index.html`; its requests for `/api/map`, `/api/start`, and `/api/state/...` will go to Render.
 4. In **Settings → Pages**, publish from the branch and folder containing `index.html` (for example, `main` / `/root`). Open the GitHub Pages URL, hard-refresh, and check that the map loads before starting a fleet.
 
-### Performance notes (Render deployment)
-
-The deployed dashboard includes conservative performance improvements that do not change routing decisions, GNN scores, congestion equations, disruption timing, tick duration, or delivery metrics:
-
-- Free-flow road-edge times are precomputed once and reused by Dijkstra; dynamic Physarum edge costs are still recalculated from the same conductivity and occupancy formula.
-- Published simulation snapshots are read without deep-copying the full fleet state for every API poll. Each tick still runs and records the same simulation state.
-- JSON API responses use low-level gzip compression when the browser advertises support, reducing map/state transfer size.
-- Vehicle markers interpolate between backend snapshots using per-edge tick progress, so movement looks continuous instead of remaining pinned at an edge endpoint.
-- Frontend state polling is sequential (no overlapping requests) and skips duplicate ticks, reducing unnecessary server and browser work.
-
-A local repeat benchmark for 100 vehicles per policy completed in approximately 8.5–8.7 seconds over 190 simulation ticks on the test environment; actual Render time will vary with shared free-instance CPU and network conditions. This is a local measurement, not a performance guarantee.
-
 ### 3. Local development
 
 Leave `config.js` as an empty string and run `python app.py`. The page uses the same-origin local API at `http://localhost:8000`.

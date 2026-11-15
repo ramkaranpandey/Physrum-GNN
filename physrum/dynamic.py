@@ -70,7 +70,6 @@ def add_simulated_connectors(graph, limit=140):
                 'geometry':[graph.nodes[u],graph.nodes[v]],'simulated':True}
         graph.edges.append(edge)
         graph.by_id[next_id] = edge
-        graph.edge_minutes[next_id] = edge['meters'] / (edge['speed_kmh'] * 1000 / 60)
         graph.adj[u].append((v,next_id))
         graph.adj[v].append((u,next_id))
         neighbors[u].add(v)
