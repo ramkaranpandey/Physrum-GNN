@@ -1,47 +1,72 @@
 """Offline dynamic Guwahati routing lab: python app.py."""
 import json
+import os
 import threading
-import time
-import webbrowser
 import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from urllib.parse import urlsplit
 from physrum.dynamic import GRAPH, DEFAULT_START, DEFAULT_END, DISPLAY_BOUNDS
 from physrum.fleet import Fleet, DEPOTS, ZONES, MAX_PAIRS, default_pairs
 from physrum.graph import RoadGraph
 
 ROOT=Path(__file__).resolve().parent
 HTML=(ROOT/'fleet.html').read_bytes()
+ALLOWED_ORIGINS={origin.strip() for origin in os.environ.get('CORS_ALLOWED_ORIGINS','*').split(',') if origin.strip()}
 SESSIONS={}
 BACKGROUND=RoadGraph(bounds=DISPLAY_BOUNDS)
 BACKGROUND.edges.extend(edge for edge in GRAPH.edges if edge.get('simulated'))
 DEFAULT_PAIRS=default_pairs()
 
 class Handler(BaseHTTPRequestHandler):
+    def cors_headers(self):
+        origin=self.headers.get('Origin')
+        if '*' in ALLOWED_ORIGINS:
+            self.send_header('Access-Control-Allow-Origin','*')
+        elif origin in ALLOWED_ORIGINS:
+            self.send_header('Access-Control-Allow-Origin',origin)
+            self.send_header('Vary','Origin')
+        self.send_header('Access-Control-Allow-Methods','GET, POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers','Content-Type')
+        self.send_header('Access-Control-Max-Age','86400')
     def respond(self,value,status=200):
         data=json.dumps(value).encode('utf8')
         self.send_response(status);self.send_header('Content-Type','application/json; charset=utf-8')
         self.send_header('Content-Length',str(len(data)));self.send_header('Cache-Control','no-store')
+        self.cors_headers()
         self.end_headers();self.wfile.write(data)
+    def do_OPTIONS(self):
+        self.send_response(204)
+        self.cors_headers()
+        self.send_header('Content-Length','0')
+        self.end_headers()
     def do_GET(self):
-        if self.path=='/':
+        path=urlsplit(self.path).path
+        if path=='/healthz':
+            return self.respond({'status':'ok','service':'physrum-fleet-api'})
+        if path=='/config.js':
+            config=(ROOT/'config.js').read_bytes()
+            self.send_response(200);self.send_header('Content-Type','application/javascript; charset=utf-8')
+            self.send_header('Content-Length',str(len(config)));self.send_header('Cache-Control','no-store')
+            self.end_headers();self.wfile.write(config)
+        elif path=='/':
             self.send_response(200);self.send_header('Content-Type','text/html; charset=utf-8')
             self.send_header('Cache-Control','no-store')
             self.send_header('Content-Length',str(len(HTML)));self.end_headers();self.wfile.write(HTML)
-        elif self.path=='/api/map':
+        elif path=='/api/map':
             self.respond({'nodes':GRAPH.nodes,'edges':BACKGROUND.edges,
                 'background_nodes':BACKGROUND.nodes,
                 'default_start':DEFAULT_START,'default_end':DEFAULT_END,
                 'depots':DEPOTS,'zones':ZONES,
                 'default_pairs':DEFAULT_PAIRS,'max_pairs':MAX_PAIRS,
                 'title':'Maligaon-Kamakhya · OSM-derived road close-up'})
-        elif self.path.startswith('/api/state/'):
-            session=SESSIONS.get(self.path.split('/')[-1])
+        elif path.startswith('/api/state/'):
+            session=SESSIONS.get(path.split('/')[-1])
             if session:self.respond(session.get())
             else:self.respond({'error':'Simulation not found'},404)
         else:self.respond({'error':'Not found'},404)
     def do_POST(self):
-        if self.path!='/api/start':return self.respond({'error':'Not found'},404)
+        if urlsplit(self.path).path!='/api/start':return self.respond({'error':'Not found'},404)
         try:
             size=int(self.headers.get('Content-Length','0'))
             if not 0<size<10000:raise ValueError('Invalid request size.')
@@ -64,13 +89,16 @@ class Handler(BaseHTTPRequestHandler):
             self.respond({'error':str(exc)},400)
 
 def main():
-    # Pick an unused port so an old demo on 8765 cannot silently serve stale UI.
-    server=ThreadingHTTPServer(('127.0.0.1',0),Handler)
-    url=f'http://127.0.0.1:{server.server_port}'
-    print(f'Guwahati dynamic routing lab: {url}',flush=True)
-    print('Keep this window open; Ctrl+C to stop.',flush=True)
-    threading.Timer(.8,lambda:webbrowser.open(url)).start()
-    try:server.serve_forever()
-    except KeyboardInterrupt:server.server_close()
+    # Render supplies PORT; local runs default to port 8000.
+    host=os.environ.get('HOST','0.0.0.0')
+    port=int(os.environ.get('PORT','8000'))
+    server=ThreadingHTTPServer((host,port),Handler)
+    print(f'PHYSRUM Fleet API listening on {host}:{port}',flush=True)
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.server_close()
 
 if __name__=='__main__':main()

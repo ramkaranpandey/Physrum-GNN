@@ -207,3 +207,39 @@ The project uses the **Python standard library only**; NumPy is an optional acce
 ## Credits
 
 Road data © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright), licensed under ODbL, via [OpenFreeMap](https://openfreemap.org/) vector tiles.
+
+---
+
+## Deploy online (GitHub Pages + Render)
+
+The dashboard is a static page, while the fleet API and simulation run in Python. GitHub Pages cannot run `app.py`, so deploy the Python service separately and point the static page at it. The included `render.yaml` creates a free Python web service in Render’s Singapore region.
+
+### 1. Deploy the backend on Render
+
+1. Push this project (including `app.py`, `physrum/`, `data/`, `requirements.txt`, `render.yaml`, and `.python-version`) to a GitHub repository.
+2. In Render, choose **New + → Blueprint**, connect that repository, and deploy the `render.yaml` service. Alternatively create a Python Web Service with build command `pip install -r requirements.txt` and start command `python app.py`.
+3. Wait for the service to become Live. Copy its public URL, such as `https://physrum-fleet-api.onrender.com`.
+4. Open `https://YOUR-RENDER-URL/healthz`; it should return JSON with `"status":"ok"`.
+
+### 2. Connect GitHub Pages to Render
+
+1. In the repository's GitHub Pages source folder, keep `index.html`, `fleet.html`, and `config.js` together.
+2. Edit `config.js` and set `window.PHYSRUM_API_BASE` to the exact Render URL (no trailing slash), for example:
+
+   ```js
+   window.PHYSRUM_API_BASE = 'https://physrum-fleet-api.onrender.com';
+   ```
+
+3. Commit and push. GitHub Pages will serve `index.html`; its requests for `/api/map`, `/api/start`, and `/api/state/...` will go to Render.
+4. In **Settings → Pages**, publish from the branch and folder containing `index.html` (for example, `main` / `/root`). Open the GitHub Pages URL, hard-refresh, and check that the map loads before starting a fleet.
+
+### 3. Local development
+
+Leave `config.js` as an empty string and run `python app.py`. The page uses the same-origin local API at `http://localhost:8000`.
+
+### Notes
+
+- Render's free web services may sleep after inactivity; the first request after sleep can take a little while.
+- Simulation sessions are held in the backend process memory. Keep one Render instance/process for this demo; restarting or redeploying the service ends active simulations.
+- `CORS_ALLOWED_ORIGINS` is set to `*` in the included starter Blueprint so GitHub Pages can call the API without extra setup. For a restricted production deployment, replace it with your exact GitHub Pages origin (for example `https://YOUR-USER.github.io`).
+- The road graph is loaded from the bundled local data; no external map API key is required.
