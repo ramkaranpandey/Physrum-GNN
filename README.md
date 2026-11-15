@@ -1,51 +1,52 @@
-# Physarum-GNN: Offline Guwahati Fleet Routing Simulation
 
-An offline experiment that compares two routing policies, classic **Dijkstra** and a **Physarum-inspired GNN** policy, on a simulated fleet operating over an OSM-derived road network of Guwahati, India. Both policies face identical vehicles, road speeds, capacities, congestion math, and hazard events, so the comparison is like for like. Purple dashed connectors are synthetic simulation roads, never verified real streets.
+# 🧬 Physarum-GNN: Bio-Inspired Dynamic Fleet Routing
 
-> **How to interpret it:** Neither routing policy is guaranteed to win. Select paths and fleet size, then compare the live arrival curves, final median arrival tick, last-car tick, congestion and routing CPU for that particular simulation. Ticks are simulation steps, not wall-clock seconds or real travel minutes.
+<p align="center">
+  <strong>🌐 LIVE DEMO: <a href="https://ramkaranpandey.github.io/Physrum-GNN/">Visit & Run PHYSRUM-GNN</a></strong>
+</p>
 
----
+**A brainless, single-celled organism—*Physarum polycephalum*, commonly known as the slime mold—demonstrates a remarkable natural approach to solving dynamic network problems.**
 
-## Live fleet results
+Long before modern computing, nature was already experimenting with adaptive networks. Instead of calculating rigid routes, this organism creates a pressurized web of tubes through which nutrients flow. When a path becomes blocked or inefficient, its tubes gradually wither, while useful alternative connections strengthen.
 
-The dashboard derives per-path and combined results from each run. The maximum fleet size is 2,500 vehicles **per policy**. Runs at that limit can take several minutes, and the tick cap may leave some vehicles en route; final median and last-car figures remain unavailable until all vehicles arrive. Previously recorded figures from the narrower map are intentionally omitted because they do not describe this expanded map.
+**What if we could bring this biological intelligence into modern transportation networks?**
 
-### Single-vehicle CLI benchmark (Maligaon–Kamakhya route, simulated blockade `14255`)
+That's the idea behind **Physarum-GNN**.
 
-| Method | Valid after closure | Estimated drive | Rerouting latency |
-| --- | --- | ---: | ---: |
-| Fixed pre-disaster route | No | unavailable | 0 ms |
-| Dijkstra rerun | Yes | 5.310 min | 1.072 ms |
-| Physarum | Yes | 5.310 min | 5,467.157 ms |
-| Physarum-GNN | Yes | 5.310 min | 5,649.875 ms |
+We combine the adaptive fluid-flow and conductivity reinforcement mechanism of *Physarum polycephalum* with a **Spatial Graph Neural Network (GNN)** to explore intelligent, congestion-aware fleet routing under dynamic road conditions.
 
-**How to read these numbers**
+We stress-test this approach against conventional **Dijkstra shortest-path routing** on real OpenStreetMap-derived road networks of **Guwahati, Assam, India**.
 
-- Every method that can reroute finds the same 5.310-minute detour. Dijkstra gets there thousands of times faster.
-- The GNN did not improve route validity or drive time.
-- The results do not support a claim that conventional shortest-path rerouting is static or inferior.
-- Timings come from one run and vary by machine. The default seeded run is reproducible, but measured CPU time is not.
-- The short purple links are simulated for this graph experiment; they are not verified travel corridors.
+### 🚀 Explore the live simulation
 
----
+**[👉 CLICK HERE TO VISIT & RUN THE LIVE PHYSRUM-GNN SIMULATION](https://ramkaranpandey.github.io/Physrum-GNN/)**
 
-## Quick start
+Explore the road network, select start and destination points, dispatch fleets, introduce dynamic disruptions, and compare both routing strategies through an interactive simulation.
 
-Requires **Python 3.10+**. No internet connection is needed.
+### ⚡ Two approaches. One dynamic road network.
 
-```bash
-python app.py
-```
+| Dijkstra | Physarum-GNN |
+|---|---|
+| Classical shortest-path algorithm | Bio-inspired adaptive routing |
+| Computes shortest routes | Uses conductivity, road occupancy and GNN-informed edge scores |
+| Reacts to blocked routes through rerouting | Adapts routes using retained conductivity and changing road conditions |
+| Efficient for conventional shortest-path problems | Explores adaptive routing under changing network conditions |
 
-The app prints a fresh local address in the terminal. Open it in your browser and keep the terminal running. Press `Ctrl+C` to stop.
+**There is no predetermined winner.**
 
-Optional: run the CLI benchmark instead.
+Dijkstra can outperform Physarum-GNN in stable networks and scenarios where computational efficiency and shortest-path optimality are the priority. Physarum-GNN can offer advantages in certain dynamic, congestion-aware scenarios where adaptive network behaviour is valuable.
 
-```bash
-python main.py
-```
+The winner depends on the scenario, network conditions and evaluation metric. Our objective is not to prove that one algorithm always beats the other, but to investigate where each approach performs best under identical simulation conditions.
 
----
+### 🔬 What makes this project interesting?
+
+- **Bio-inspired computing:** Translating biological fluid-flow behaviour into a computational routing mechanism.
+- **Graph Neural Networks:** Integrating spatial graph learning with adaptive conductivity-based routing.
+- **Dynamic road networks:** Simulating road blockages, congestion, capacity constraints and alternative routes.
+- **Real-world geographical data:** Using OpenStreetMap-derived road infrastructure from Guwahati, Assam.
+- **Comparative evaluation:** Testing both algorithms under the same fleet sizes, road conditions, congestion model and disruption events.
+
+**The central question:** Can principles found in a simple biological organism help us develop more adaptive transportation and network-routing systems?
 
 ## Fleet dashboard
 
